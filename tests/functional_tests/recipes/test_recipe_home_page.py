@@ -33,20 +33,26 @@ class RecipeHomePageFunctionalTest(RecipeBaseFunctionalTest):
             )
         )
 
-        # Clica no campo de busca, digita e envia
+        # Digita o título e envia
         search_input.send_keys(title_needed)
         search_input.send_keys(Keys.ENTER)
 
-        # Aguarda a nova renderização da lista de receitas
-        content_list = WebDriverWait(self.browser, 10).until(
-            EC.presence_of_element_located(
-                (By.CLASS_NAME, 'main-content-list')
+        # Aguarda a presença do resultado atualizado após ENTER
+        WebDriverWait(self.browser, 10).until(
+            EC.text_to_be_present_in_element(
+                (By.CLASS_NAME, 'main-content-list'),
+                title_needed
             )
         )
 
-        # Verifica se o título esperado está na lista
-        self.assertIn(title_needed, content_list.text)
+        # Agora reobtém o elemento para evitar o stale reference
+        content_list = self.browser.find_element(
+            By.CLASS_NAME, 'main-content-list'
+        )
 
+        # Verifica se o título está visível
+        self.assertIn(title_needed, content_list.text)
+        
     @patch('recipes.views.site.PER_PAGE', new=2)
     def test_recipe_home_page_pagination(self):
         self.make_recipe_in_batch()
