@@ -2,7 +2,8 @@ import pytest
 from django.contrib.auth.models import User
 from django.urls import reverse
 from selenium.webdriver.common.by import By
-
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from .base import AuthorsBaseTest
 
 
@@ -53,10 +54,12 @@ class AuthorsLoginTest(AuthorsBaseTest):
             self.live_server_url + reverse('authors:login')
         )
 
-        # Usuário vê o formulário de login
-        form = self.browser.find_element(By.CLASS_NAME, 'main-form')
+        # Espera o formulário estar disponível
+        form = WebDriverWait(self.browser, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'main-form'))
+        )
 
-        # E tenta enviar valores vazios
+        # Usuário tenta enviar valores vazios
         username = self.get_by_placeholder(form, 'Type your username')
         password = self.get_by_placeholder(form, 'Type your password')
         username.send_keys(' ')
@@ -65,12 +68,17 @@ class AuthorsLoginTest(AuthorsBaseTest):
         # Envia o formulário
         form.submit()
 
-        # Vê uma mensagem de erro na tela
+        # Aguarda o corpo da página ser carregado com a mensagem de erro
+        body_text = WebDriverWait(self.browser, 10).until(
+            EC.presence_of_element_located((By.TAG_NAME, 'body'))
+        ).text
+
+        # Verifica a mensagem de erro
         self.assertIn(
             'Invalid username or password',
-            self.browser.find_element(By.TAG_NAME, 'body').text
+            body_text
         )
-        
+            
     def test_form_login_invalid_credentials(self):
         # Usuário abre a página de login
         self.browser.get(

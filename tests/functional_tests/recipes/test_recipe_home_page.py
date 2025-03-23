@@ -5,7 +5,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from .base import RecipeBaseFunctionalTest
-
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 @pytest.mark.functional_test
 class RecipeHomePageFunctionalTest(RecipeBaseFunctionalTest):
@@ -19,29 +20,32 @@ class RecipeHomePageFunctionalTest(RecipeBaseFunctionalTest):
         recipes = self.make_recipe_in_batch()
 
         title_needed = 'This is what I need'
-
         recipes[0].title = title_needed
         recipes[0].save()
 
         # Usuário abre a página
         self.browser.get(self.live_server_url)
 
-        # Vê um campo de busca com o texto "Search for a recipe"
-        search_input = self.browser.find_element(
-            By.XPATH,
-            '//input[@placeholder="Search for a recipe"]'
+        # Aguarda o campo de busca estar presente
+        search_input = WebDriverWait(self.browser, 10).until(
+            EC.presence_of_element_located(
+                (By.XPATH, '//input[@placeholder="Search for a recipe"]')
+            )
         )
 
-        # Clica neste input e digita o termo de busca
-        # para encontrar a receita o título desejado
+        # Clica no campo de busca, digita e envia
         search_input.send_keys(title_needed)
         search_input.send_keys(Keys.ENTER)
 
-        # O usuário vê o que estava procurando na página
-        self.assertIn(
-            title_needed,
-            self.browser.find_element(By.CLASS_NAME, 'main-content-list').text,
+        # Aguarda a nova renderização da lista de receitas
+        content_list = WebDriverWait(self.browser, 10).until(
+            EC.presence_of_element_located(
+                (By.CLASS_NAME, 'main-content-list')
+            )
         )
+
+        # Verifica se o título esperado está na lista
+        self.assertIn(title_needed, content_list.text)
 
     @patch('recipes.views.site.PER_PAGE', new=2)
     def test_recipe_home_page_pagination(self):
