@@ -1,7 +1,21 @@
 from django.urls import path
 from . import views
 
+# api/routers.py
+from rest_framework.routers import SimpleRouter
+from django.shortcuts import get_object_or_404
+
+class OptionalSlashSimpleRouter(SimpleRouter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.trailing_slash = '/?'
+
 app_name = 'authors'
+
+
+author_api_router = OptionalSlashSimpleRouter()
+author_api_router.register('api', views.AuthorViewSet, basename='author-api')
+
 
 urlpatterns = [
     path('register/', views.register_view, name='register'),
@@ -25,4 +39,11 @@ urlpatterns = [
         views.DashboardRecipe.as_view(),
         name='dashboard_recipe_edit'
     ),
+    path(
+        'profile/<int:id>/',
+        views.ProfileView.as_view(),
+        name='profile'
+    ),
 ]
+
+urlpatterns += author_api_router.urls

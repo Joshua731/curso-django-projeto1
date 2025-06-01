@@ -3,6 +3,7 @@ from time import sleep
 import os
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 ROOT_PATH = Path(__file__).parent.parent
 CHROMEDRIVER_NAME = 'chromedriver.exe'
@@ -19,7 +20,7 @@ def make_chrome_browser(*options):
     if os.environ.get('SELENIUM_HEADLESS') == '1':
         chrome_options.add_argument('--headless')
     
-    chrome_service = Service(executable_path=CHROMEDRIVER_PATH)
+    chrome_service = Service(ChromeDriverManager().install())
     browser = webdriver.Chrome(service=chrome_service, options=chrome_options)
     return browser
 

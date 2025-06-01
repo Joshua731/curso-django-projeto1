@@ -17,3 +17,8 @@ CSRF_TRUSTED_ORIGINS: list[str] = parse_comma_sep_str_to_list(get_env_variable('
 ROOT_URLCONF = 'project.urls'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+#     'PAGE_SIZE': 10
+# }
